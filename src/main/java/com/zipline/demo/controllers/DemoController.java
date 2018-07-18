@@ -32,22 +32,6 @@ public class DemoController {
         return "{\"hash\": \"" + hash + "\"}";
     }
 
-    @CrossOrigin
-    @PostMapping("/comment")
-    public String comment(
-            @RequestParam(value="postHash") String postHash,
-            @RequestParam(value="sender") String sender,
-            @RequestParam(value="body") String body,
-            @RequestParam(value="timestamp") String timestamp
-    ) {
-        Message comment = new Message(sender, body, timestamp);
-        Message post = getPost(postHash);
-        String commentHash = publishMessage(comment);
-        post.addPointer(commentHash);
-        String hash = publishMessage(post);
-        return "{\"hash\": \"" + hash + "\"}";
-    }
-
     private String publishMessage(Message message) {
         byte[] json;
         Multihash added;
@@ -68,19 +52,6 @@ public class DemoController {
     private Multihash addJson(byte[] json) throws Exception {
         NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper(json);
         return ipfs.add(file).get(0).hash;
-    }
-
-    private Message getPost(String postHash) {
-        String postJson;
-        try {
-            postJson = getJsonString(postHash);
-            Message post = new ObjectMapper().readValue(postJson, Nested.class).getBody();
-            System.out.println(post.getMessageBody());
-        } catch (Exception e) {
-            System.out.println("error: " + e.getMessage());
-        }
-
-        return null;
     }
 
     private String getJsonString(String jsonHashAddress) throws Exception {
